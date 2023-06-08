@@ -33,6 +33,7 @@ INSTALLED_APPS = [
 
     'rest_framework',
     'corsheaders',
+    'sslserver',
     #oauth2
     'oauth2_provider',
     'social_django',
@@ -214,12 +215,16 @@ REST_FRAMEWORK = {
 CORS_ALLOWED_ORIGINS = [
     "https://5f7f-84-54-75-42.ngrok-free.app",
     "http://localhost:8000",
+    "https://127.0.0.1:8000",
 ]
 
-SOCIAL_AUTH_FACEBOOK_KEY = '958683718801176'
-SOCIAL_AUTH_FACEBOOK_SECRET = 'a58d762462f42fa8ecf685ed80293c0f'
+# SOCIAL_AUTH_FACEBOOK_KEY = '958683718801176'
+# SOCIAL_AUTH_FACEBOOK_SECRET = 'a58d762462f42fa8ecf685ed80293c0f'
 
-SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_KEY = '763234105480586'
+SOCIAL_AUTH_FACEBOOK_SECRET = 'bc63eb47aab75c934d0a9416e4932d6d'
+
+# SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
     'fields': 'id, name, email'
 }
