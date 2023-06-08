@@ -16,7 +16,7 @@ SECRET_KEY = de_config("SECRET_KEY", default="Your key")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['5f7f-84-54-75-42.ngrok-free.app', '127.0.0.1']
 
 
 # Application definition
@@ -32,14 +32,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'corsheaders',
+    #oauth2
     'oauth2_provider',
     'social_django',
-    'rest_framework_social_oauth2',
+    'drf_social_oauth2',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -106,7 +109,7 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.facebook.FacebookAppOAuth2',
     'social_core.backends.facebook.FacebookOAuth2',
 
-    'rest_framework_social_oauth2.backends.DjangoOAuth2',
+    'drf_social_oauth2.backends.DjangoOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -139,7 +142,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
 
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
-        'rest_framework_social_oauth2.authentication.SocialAuthentication',
+        'drf_social_oauth2.authentication.SocialAuthentication',        
 
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -208,6 +211,19 @@ REST_FRAMEWORK = {
 
 }
 
+CORS_ALLOWED_ORIGINS = [
+    "https://5f7f-84-54-75-42.ngrok-free.app",
+    "http://localhost:8000",
+]
+
+SOCIAL_AUTH_FACEBOOK_KEY = '958683718801176'
+SOCIAL_AUTH_FACEBOOK_SECRET = 'a58d762462f42fa8ecf685ed80293c0f'
+
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id, name, email'
+}
+
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = de_config("SOCIAL_AUTH_GOOGLE_OAUTH2_KEY", default="Your key")
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = de_config("SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET", default="Your secret")
 
@@ -216,4 +232,8 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.profile',
 ]
 
+SOCIAL_AUTH_USER_FIELDS = ['email', 'first_name', 'password']
+
 SOCIAL_AUTH_JSONFIELD_ENABLED = True
+
+SOCIAL_AUTH_URL_NAMESPACE = 'drf:social'
