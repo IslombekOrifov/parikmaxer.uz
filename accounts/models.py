@@ -56,6 +56,7 @@ class CustomUser(AbstractUser):
         blank=True, null=True
     )
 
+    is_company = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
 
 
