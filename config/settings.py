@@ -1,10 +1,12 @@
-
+import os
+import sys
 from pathlib import Path
 from decouple import config as de_config
 from rest_framework import ISO_8601
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(os.path.join(BASE_DIR, 'src')) 
 
 
 # Quick-start development settings - unsuitable for production
@@ -31,9 +33,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'posts.apps.PostsConfig',
+
     'rest_framework',
     'corsheaders',
     'sslserver',
+
     #oauth2
     'oauth2_provider',
     'social_django',
@@ -103,6 +108,21 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
+
+
+SOCIAL_AUTH_PIPELINE = [
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'accounts.authentication.create_profile',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+]
+
 
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
@@ -218,13 +238,12 @@ CORS_ALLOWED_ORIGINS = [
     "https://127.0.0.1:8000",
 ]
 
-# SOCIAL_AUTH_FACEBOOK_KEY = '958683718801176'
-# SOCIAL_AUTH_FACEBOOK_SECRET = 'a58d762462f42fa8ecf685ed80293c0f'
 
-SOCIAL_AUTH_FACEBOOK_KEY = '763234105480586'
-SOCIAL_AUTH_FACEBOOK_SECRET = 'bc63eb47aab75c934d0a9416e4932d6d'
+SOCIAL_AUTH_FACEBOOK_KEY =  de_config("SOCIAL_AUTH_FACEBOOK_KEY", default="Your key")
+SOCIAL_AUTH_FACEBOOK_SECRET =  de_config("SOCIAL_AUTH_FACEBOOK_SECRET", default="Your secret")
 
-# SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
 SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
     'fields': 'id, name, email'
 }

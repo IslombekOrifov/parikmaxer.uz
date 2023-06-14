@@ -1,3 +1,4 @@
+from uuid import uuid4
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
@@ -44,21 +45,29 @@ class CustomUser(AbstractUser):
         blank=True, 
         validators=[validate_phone]
     )
+    custom_id = models.CharField(
+        max_length=12,
+        db_index=True,
+        error_messages={
+            "unique": _("A user with that custom_id already exists."),
+        },
+        unique=True,
+    )
+
+    image = models.ImageField(
+        upload_to=upload_avatar_path, 
+        validators=[validate_image], 
+        blank=True, null=True
+    )
+    
+    is_worker = models.BooleanField(default=False)
+    is_company = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
 
     objects = CustomUserManager()
-
-    avatar = models.ImageField(
-        upload_to=upload_avatar_path, 
-        validators=[validate_image], 
-        blank=True, null=True
-    )
-
-    is_company = models.BooleanField(default=False)
-    is_deleted = models.BooleanField(default=False)
-
 
     def __str__(self):
         if self.get_full_name():
@@ -67,8 +76,43 @@ class CustomUser(AbstractUser):
     
 
     def save(self, *args, **kwargs):
-        if self.username:
-            self.username = ' '.join(self.username.strip().split())
         self.email = ' '.join(self.email.strip().split())
         self.phone = ' '.join(self.phone.strip().split())
+        if self.custom_id == '':
+            self.custom_id = str(uuid4())[-12:]
         super().save(*args, **kwargs)
+
+
+class Profile(models.Model):
+    """ User's profile datas """
+
+    class LifeStatus(models.TextChoices):
+        SINGLE = 's', 'Single'
+        RELATIONSHIP = 'ir', 'In relationship'
+
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='profile')
+    about = models.CharField(max_length=300, blank=True)
+    birth_date = models.DateField(blank=True, null=True)
+    other_skills = models.CharField(max_length=300, blank=True)
+    overview = models.CharField(max_length=100, blank=True)    
+    life_status = models.CharField(
+        max_length=2, 
+        choices=LifeStatus.choices, 
+        default=LifeStatus.SINGLE
+    )
+
+
+class Experience(models.Model):
+    user = models.ForeignKey(CustomUser, related_name='experiences', on_delete=models.CASCADE)
+    
+    role = models.CharField(max_length=150)
+    company = models.CharField(max_length=150)
+    work_start_date = models.DateField()
+    work_end_date = models.DateField(blank=True, null=True)
+    work_now = models.BooleanField(default=False)
+    work_duties = models.CharField(max_length=300, blank=True)
+
+    date_created = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return self.role
