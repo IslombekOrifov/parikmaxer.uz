@@ -124,7 +124,6 @@ class Experience(models.Model):
         return self.role
     
 
-
 class News(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=50)
