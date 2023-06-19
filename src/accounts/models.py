@@ -3,10 +3,19 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.base_user import BaseUserManager
+from django.utils.text import slugify
+from uuid import uuid4
 
 from .validators import validate_phone, validate_image
-from .services import upload_avatar_path
+from .services import upload_avatar_path, upload_news_path
 
+
+class PersonCategory(models.TextChoices):
+    NONE = '', 'None'
+    ALL = 'all', 'All'
+    MALE = 'ma', 'Male'
+    FEMALE = 'fe', 'Female'
+    BABY = 'ba', 'Baby'
 
 class CustomUserManager(BaseUserManager):
     use_in_migrations = True
@@ -38,6 +47,10 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
+    class Gender(models.TextChoices):
+        NONE = '', 'None'
+        MALE = 'ma', 'Male'
+        FEMALE = 'fe', 'Female'
     username = None
     email = models.EmailField(_('email address'), unique=True)
     phone = models.CharField(
@@ -59,7 +72,11 @@ class CustomUser(AbstractUser):
         validators=[validate_image], 
         blank=True, null=True
     )
-    
+    gender = models.CharField(
+        max_length=2, 
+        choices=Gender.choices, 
+        default=Gender.NONE
+    )    
     is_worker = models.BooleanField(default=False)
     is_company = models.BooleanField(default=False)
     is_deleted = models.BooleanField(default=False)
@@ -93,7 +110,7 @@ class Profile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='profile')
     about = models.CharField(max_length=300, blank=True)
     birth_date = models.DateField(blank=True, null=True)
-    other_skills = models.CharField(max_length=300, blank=True)
+    skills = models.CharField(max_length=300, blank=True)
     overview = models.CharField(max_length=100, blank=True)    
     life_status = models.CharField(
         max_length=2, 
@@ -112,7 +129,44 @@ class Experience(models.Model):
     work_now = models.BooleanField(default=False)
     work_duties = models.CharField(max_length=300, blank=True)
 
-    date_created = models.DateField(auto_now_add=True)
+    created_at = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return self.role
+    
+
+
+class News(models.Model):
+    class PostStatus(models.TextChoices):
+        ACTIVE = 'ac', 'Active'
+        NOTACTIVE = 'na', 'Not Active'
+        ARCHIVE = 'ar', 'Archive'
+        BANNED = 'bn', 'Banned'
+    
+    title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=50)
+    image = models.ImageField(
+        upload_to=upload_news_path, 
+        validators=[validate_image], 
+        blank=True, null=True
+    )
+    body = models.CharField(max_length=300, blank=True, null=True)
+    status = models.CharField(max_length=3, choices=PostStatus.choices, default=PostStatus.ACTIVE)
+    is_deleted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='posts')
+
+
+    def __str__(self):
+        return self.title
+    
+    def save(self, *args, **kwargs):
+        if self.body != '':
+            self.body = ' '.join(self.body.strip().split())
+        if self.title != '':
+            self.title = ' '.join(self.title.strip().split())
+        if not self.slug:
+            self.slug == slugify(uuid4())
+        super().save(self, *args, **kwargs)

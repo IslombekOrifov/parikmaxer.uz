@@ -33,6 +33,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'companies.apps.CompaniesConfig',
+    'ads.apps.AdsConfig',
     'posts.apps.PostsConfig',
 
     'rest_framework',
