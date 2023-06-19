@@ -1,6 +1,7 @@
 from django.db import models
 
-from accounts.models import CustomUser, PersonCategory
+from utils.status import PersonCategory
+from accounts.models import CustomUser
 from accounts.validators import validate_phone
 from .services import upload_logo_path, upload_serv_image_path
 

@@ -1,4 +1,3 @@
-from uuid import uuid4
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
@@ -6,16 +5,10 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.utils.text import slugify
 from uuid import uuid4
 
+from utils.status import Gender, PostStatus
 from .validators import validate_phone, validate_image
 from .services import upload_avatar_path, upload_news_path
 
-
-class PersonCategory(models.TextChoices):
-    NONE = '', 'None'
-    ALL = 'all', 'All'
-    MALE = 'ma', 'Male'
-    FEMALE = 'fe', 'Female'
-    BABY = 'ba', 'Baby'
 
 class CustomUserManager(BaseUserManager):
     use_in_migrations = True
@@ -47,10 +40,6 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
-    class Gender(models.TextChoices):
-        NONE = '', 'None'
-        MALE = 'ma', 'Male'
-        FEMALE = 'fe', 'Female'
     username = None
     email = models.EmailField(_('email address'), unique=True)
     phone = models.CharField(
@@ -137,12 +126,6 @@ class Experience(models.Model):
 
 
 class News(models.Model):
-    class PostStatus(models.TextChoices):
-        ACTIVE = 'ac', 'Active'
-        NOTACTIVE = 'na', 'Not Active'
-        ARCHIVE = 'ar', 'Archive'
-        BANNED = 'bn', 'Banned'
-    
     title = models.CharField(max_length=200)
     slug = models.SlugField(max_length=50)
     image = models.ImageField(
