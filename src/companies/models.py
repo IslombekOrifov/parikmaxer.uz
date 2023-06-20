@@ -50,6 +50,8 @@ class CompanyBranch(models.Model):
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
     
+    def __str__(self):
+        return f"{ self.company.name } > filial >{ self.name }" 
 
 class CompanyWorker(models.Model):
     company_branch = models.ForeignKey(
@@ -62,6 +64,8 @@ class CompanyWorker(models.Model):
         on_delete=models.CASCADE,
         related_name='workers'
     )
+    def __str__(self):
+        return f"{ self.company_branch.company.name } >{ self.worker.email }" 
 
 
 class CompanyService(models.Model):
@@ -80,6 +84,9 @@ class CompanyService(models.Model):
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"{ self.company_branch.company.name } >{ self.name }" 
+
 
 class ServiceImage(models.Model):
     service = models.ForeignKey(
@@ -88,6 +95,9 @@ class ServiceImage(models.Model):
         related_name='images'
     )
     image = models.ImageField(upload_to=upload_serv_image_path)
+
+    def __str__(self):
+        return f"{ self.service.name } > image" 
 
 
 class Rating(models.Model):
@@ -106,4 +116,5 @@ class Rating(models.Model):
     description = models.CharField(max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    
+    def __str__(self):
+        return f"{ self.user.email } > { self.company.name }" 

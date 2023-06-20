@@ -73,20 +73,20 @@ class ExperienceSerializer(serializers.ModelSerializer):
         exclude = ['user', 'created_at']
 
 
-class NewsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = News
-        fields = "__all__"
-        extra_kwargs = {
-            'slug': {'read_only': True},
-            'created_at': {'read_only': True},
-            'updated_at': {'read_only': True},
-            'author': {'read_only': True},
-            'status': {'write_only': True},
-            'is_deleted': {'write_only': True},
-        }
+# class NewsSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = News
+#         fields = "__all__"
+#         extra_kwargs = {
+#             'slug': {'read_only': True},
+#             'created_at': {'read_only': True},
+#             'updated_at': {'read_only': True},
+#             'author': {'read_only': True},
+#             'status': {'write_only': True},
+#             'is_deleted': {'write_only': True},
+#         }
     
-    def create(self, validated_data):
-        validated_data['slug']=str(uuid4())[-20:]
-        return super().create(self, validated_data)
+#     def create(self, validated_data):
+#         validated_data['slug']=str(uuid4())[-20:]
+#         return super().create(self, validated_data)
     

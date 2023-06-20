@@ -107,6 +107,9 @@ class Profile(models.Model):
         default=LifeStatus.SINGLE
     )
 
+    def __str__(self):
+        return f"{self.user.email} > profile"
+    
 
 class Experience(models.Model):
     user = models.ForeignKey(CustomUser, related_name='experiences', on_delete=models.CASCADE)

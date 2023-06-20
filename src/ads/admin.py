@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Ad
+
+
+@admin.register(Ad)
+class AdAdmin(admin.ModelAdmin):
+    list_display = ['company', 'author', 'title', 'image', 'status', 'start_at', 'end_at', 'created_at']
