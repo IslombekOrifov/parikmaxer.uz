@@ -8,12 +8,12 @@ from .models import (
 
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', 'logo', 'director' 'person_category', 'created_at']
+    list_display = ['name', 'slug', 'logo', 'director', 'person_category', 'created_at']
 
 
 @admin.register(CompanyBranch)
 class CompanyBranchAdmin(admin.ModelAdmin):
-    list_display = ['company', 'name', 'slug', 'phone1' 'phone2', 'logo', 'address', 'google_map', 'created_at']
+    list_display = ['company', 'name', 'slug', 'phone1', 'phone2', 'logo', 'address', 'google_map', 'created_at']
 
 
 @admin.register(CompanyWorker)
@@ -23,7 +23,7 @@ class CompanyWorkerAdmin(admin.ModelAdmin):
 
 @admin.register(CompanyService)
 class CompanyServiceAdmin(admin.ModelAdmin):
-    list_display = ['company_branch', 'name', 'person_category', 'price' 'description', 'created_at']
+    list_display = ['company_branch', 'name', 'person_category', 'price', 'description', 'created_at']
 
 
 @admin.register(ServiceImage)

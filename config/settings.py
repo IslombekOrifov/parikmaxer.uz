@@ -35,7 +35,7 @@ INSTALLED_APPS = [
 
     'companies.apps.CompaniesConfig',
     'ads.apps.AdsConfig',
-    'posts.apps.PostsConfig',
+    'orders.apps.OrdersConfig',
 
     'rest_framework',
     'corsheaders',
@@ -147,6 +147,13 @@ USE_I18N = True
 
 USE_TZ = True
 
+DATE_FORMAT = "%d-%m-%Y"
+
+DATETIME_FORMAT = "%d-%m-%Y %H:%M:%S"
+
+DATE_INPUT_FORMATS = ["%d-%m-%Y",]
+
+DATETIME_INPUT_FORMATS = ["%d-%m-%Y %H:%M:%S",]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -210,15 +217,14 @@ REST_FRAMEWORK = {
     'FORMAT_SUFFIX_KWARG': 'format',
     'URL_FIELD_NAME': 'url',
 
-    # Input and output formats
-    'DATE_FORMAT': ISO_8601,
-    'DATE_INPUT_FORMATS': [ISO_8601],
+    'DATE_FORMAT': "%d-%m-%Y",
+    'DATE_INPUT_FORMATS': ["%d-%m-%Y",],
 
-    'DATETIME_FORMAT': ISO_8601,
-    'DATETIME_INPUT_FORMATS': [ISO_8601],
+    'DATETIME_FORMAT': "%d-%m-%Y %H:%M:%S",
+    'DATETIME_INPUT_FORMATS': ["%d-%m-%Y %H:%M:%S",],
 
-    'TIME_FORMAT': ISO_8601,
-    'TIME_INPUT_FORMATS': [ISO_8601],
+    'TIME_FORMAT': "%H:%M:%S",
+    'TIME_INPUT_FORMATS': ["%H:%M:%S",],
 
     # Encoding
     'UNICODE_JSON': True,
@@ -234,11 +240,12 @@ REST_FRAMEWORK = {
 
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "https://5f7f-84-54-75-42.ngrok-free.app",
-    "http://localhost:8000",
-    "https://127.0.0.1:8000",
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "https://5f7f-84-54-75-42.ngrok-free.app",
+#     "http://localhost:8000",
+#     "http://127.0.0.1:8000",
+#     "https://127.0.0.1:8001",
+# ]
 
 
 SOCIAL_AUTH_FACEBOOK_KEY =  de_config("SOCIAL_AUTH_FACEBOOK_KEY", default="Your key")

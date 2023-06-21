@@ -1,7 +1,9 @@
 from rest_framework import generics, permissions
-from .serializers import UserRegisterSerializer
 
 from accounts.models import CustomUser
+
+from api.v1.accounts.serializers import UserRegisterSerializer
+
 
 
 class UserRegisterView(generics.CreateAPIView):

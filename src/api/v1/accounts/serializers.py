@@ -1,4 +1,5 @@
 from uuid import uuid4
+import datetime
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers, validators
 
@@ -42,29 +43,65 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         )
         user.set_password(validated_data['password'])
         user.save()
+        Profile.objects.create(user=user)
         return user
-    
-
-class UserEditSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        exclude = ['is_staff', 'is_active', 'date_joined', 'custom_id', 'is_worker', 'is_company', 'is_deleted']
-
-    def validate_email(self, value):
-        print()
-        print()
-        print(value)
-        print()
-        print()
-        if CustomUser.objects.filter(email=value).exists():
-            raise serializers.ValidationError({"email": "Email already in use."})
-        return value
     
 
 class ProfileEditSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        exclude = ['user',]
+        exclude = ['user', 'id']
+
+
+class UserEditSerializer(serializers.ModelSerializer):
+    profile = ProfileEditSerializer(many=False)
+    class Meta:
+        model = CustomUser
+        exclude = [
+            'is_staff', 'is_active', 'date_joined', 'custom_id', 
+            'is_worker', 'is_company', 'is_deleted', 'password',
+            'is_superuser', 'groups', 'user_permissions'
+        ]
+    
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile')
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if profile_data:
+            # user = self.data['user']
+            profile_db = Profile.objects.get(user=instance)
+            print(profile_db)
+            profile_serializer = ProfileEditSerializer(data=profile_data, partial=True)
+            if profile_serializer.is_valid():
+                profile_serializer.update(profile_db, profile_data)
+        return instance
+
+
+class ExperienceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Experience
+        exclude = ['user', 'created_at']
+
+    def validate(self, attrs):
+        start = datetime.date.strftime(attrs['work_start_date'], '%d-%m-%Y')
+        end = datetime.date.strftime(attrs['work_end_date'], '%d-%m-%Y')
+        if start > end:
+            raise serializers.ValidationError("Enter correct date")
+        if end and attrs.get('work_now'):
+            raise serializers.ValidationError("You can't enter work end time and work now together")
+        return attrs
+
+class UserDetailSerializer(serializers.ModelSerializer):
+    profile = ProfileEditSerializer(many=False)
+    experiences = ExperienceSerializer(many=True)
+    class Meta:
+        model = CustomUser
+        fields = [
+            'email', 'first_name', 'last_name', 'custom_id', 
+            'phone', 'image', 'gender', 'profile', 'experiences'
+        ]
 
     
 class ExperienceSerializer(serializers.ModelSerializer):
@@ -72,21 +109,11 @@ class ExperienceSerializer(serializers.ModelSerializer):
         model = Experience
         exclude = ['user', 'created_at']
 
-
-# class NewsSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = News
-#         fields = "__all__"
-#         extra_kwargs = {
-#             'slug': {'read_only': True},
-#             'created_at': {'read_only': True},
-#             'updated_at': {'read_only': True},
-#             'author': {'read_only': True},
-#             'status': {'write_only': True},
-#             'is_deleted': {'write_only': True},
-#         }
-    
-#     def create(self, validated_data):
-#         validated_data['slug']=str(uuid4())[-20:]
-#         return super().create(self, validated_data)
-    
+    def validate(self, attrs):
+        start = datetime.date.strftime(attrs['work_start_date'], '%d-%m-%Y')
+        end = datetime.date.strftime(attrs['work_end_date'], '%d-%m-%Y')
+        if start > end:
+            raise serializers.ValidationError("Enter correct date")
+        if end and attrs.get('work_now'):
+            raise serializers.ValidationError("You can't enter work end time and work now together")
+        return attrs
