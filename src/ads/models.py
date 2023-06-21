@@ -1,18 +1,12 @@
 from django.db import models
 
+from utils.status import AdStatus
 from accounts.models import CustomUser
 from companies.models import Company
 from .services import upload_ads_path
 
 
 class Ad(models.Model):
-    class AdStatus(models.TextChoices):
-        ACTIVE = 'ac', 'Active'
-        WAITING = 'wt', 'Waiting'
-        NOTACTIVE = 'na', 'Not Active'
-        ARCHIVE = 'ar', 'Archive'
-        BANNED = 'bn', 'Banned'
-
     company = models.ForeignKey(
         Company,
         on_delete=models.CASCADE, 

@@ -24,4 +24,11 @@ class OrderStatus(models.TextChoices):
     ACTIVE = 'ac', 'Active'
     WAITING = 'wt', 'Waiting'
     RECIVED = 'rc', 'Recived'
-    Rejected = 'rj', 'Rejected'
+    REJECTED = 'rj', 'Rejected'
+
+
+class AdStatus(models.TextChoices):
+    ACTIVE = 'ac', 'Active'
+    WAITING = 'wt', 'Waiting'
+    NOTACTIVE = 'na', 'Not Active'
+    ARCHIVE = 'ar', 'Archive'
