@@ -86,8 +86,6 @@ class ExperienceListAPIView(generics.ListAPIView):
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
         filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
         queryset = Experience.objects.filter(user__custom_id=self.kwargs[lookup_url_kwarg])
-        print(self.lookup_field)
-        print(self.kwargs[lookup_url_kwarg])
         return queryset
     
     def list(self, request, *args, **kwargs):

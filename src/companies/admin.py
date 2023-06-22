@@ -1,9 +1,15 @@
 from django.contrib import admin
 
 from .models import (
-    Company, CompanyBranch, CompanyWorker, 
+    ApplicationCompany, Company, 
+    CompanyBranch, CompanyWorker, 
     CompanyService, ServiceImage, Rating
 )
+
+
+@admin.register(ApplicationCompany)
+class ApplicationCompanyAdmin(admin.ModelAdmin):
+    list_display = ['name', 'logo', 'user', 'person_category', 'status', 'created_at', 'updated_at']
 
 
 @admin.register(Company)

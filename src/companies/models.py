@@ -1,10 +1,31 @@
 from django.db import models
 
-from utils.status import PersonCategory
+from utils.status import PersonCategory, Status1, ReciveStatus
 from accounts.models import CustomUser
 from accounts.validators import validate_phone
 from .services import upload_logo_path, upload_serv_image_path
 
+
+class ApplicationCompany(models.Model):
+    name = models.CharField(max_length=200, unique=True)
+    logo = models.ImageField(upload_to=upload_logo_path, blank=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.PROTECT, related_name='application')
+    person_category = models.CharField(
+        max_length=3, 
+        choices=PersonCategory.choices,
+        default=PersonCategory.ALL
+    )
+    status = models.CharField(
+        max_length=3,
+        choices=ReciveStatus.choices,
+        blank=True,
+        default=ReciveStatus.WAITING
+    )
+    created_at = models.DateField(auto_now_add=True)
+    updated_at = models.DateField(auto_now=True)
+
+    def __str__(self):
+        return self.name 
 
 
 class Company(models.Model):
@@ -18,9 +39,17 @@ class Company(models.Model):
         choices=PersonCategory.choices,
         default=PersonCategory.ALL
     )
-
+    status = models.CharField(
+        max_length=3,
+        choices=Status1.choices,
+        blank=True,
+        default=Status1.ACTIVE
+    )
+    overview = models.CharField(max_length=300, blank=True)
+    description = models.TextField(blank=True)
     created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateField(auto_now=True)
+    is_deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name 
@@ -65,7 +94,7 @@ class CompanyWorker(models.Model):
         related_name='workers'
     )
     def __str__(self):
-        return f"{ self.company_branch.company.name } >{ self.worker.email }" 
+        return f"{ self.company_branch.company.name } > { self.worker.email }" 
 
 
 class CompanyService(models.Model):

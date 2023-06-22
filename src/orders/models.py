@@ -1,6 +1,6 @@
 from django.db import models
 
-from utils.status import OrderStatus
+from utils.status import ReciveStatus
 from accounts.models import CustomUser
 from companies.models import (
     CompanyBranch, 
@@ -32,8 +32,8 @@ class Order(models.Model):
     )
     status = models.CharField(
         max_length=2,
-        choices=OrderStatus.choices,
-        default=OrderStatus.WAITING
+        choices=ReciveStatus.choices,
+        default=ReciveStatus.WAITING
     )
     description = models.CharField(max_length=200, blank=True)
     created_at = models.DateField(auto_now_add=True)

@@ -31,6 +31,10 @@ class CompanyBranchSerializer(serializers.ModelSerializer):
             'slug': {'read_only': True},
         }
 
+    def create(self, validated_data):
+        validated_data['slug'] = str(uuid4())[-15:]
+        return super().create(validated_data)
+
 
 class CompanyWorkerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -47,6 +51,7 @@ class CompanyServiceSerializer(serializers.ModelSerializer):
             'director': {'read_only': True},
         }
 
+
 class ServiceImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceImage
@@ -57,3 +62,26 @@ class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
         fields = ['rate', 'description']
+
+
+
+
+class CompanyRetrieveSerializer(serializers.ModelSerializer):
+    branches = CompanyBranchSerializer(many=True)
+    class Meta:
+        model = Company
+        fields = [
+            'name', 'slug', 'logo', 'director', 'person_category', 'status', 
+            'overview', 'description', 'created_at', 'branches'
+        ]
+
+
+class CompanyBranchRetrieveSerializer(serializers.ModelSerializer):
+    workers = CompanyWorkerSerializer(many=True)
+    services = CompanyServiceSerializer(many=True)
+    class Meta:
+        model = CompanyBranch
+        fields = [
+            'company', 'name', 'slug', 'phone1', 'phone2', 'logo', 
+            'address', 'google_map', 'workers', 'services'
+        ]

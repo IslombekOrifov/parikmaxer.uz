@@ -2,25 +2,25 @@ from django.db import models
 
 
 class Gender(models.TextChoices):
-        NONE = '', 'None'
-        MALE = 'ma', 'Male'
-        FEMALE = 'fe', 'Female'
+    NONE = '', 'None'
+    MALE = 'ma', 'Male'
+    FEMALE = 'fe', 'Female'
 
 class PersonCategory(models.TextChoices):
     NONE = '', 'None'
     ALL = 'all', 'All'
-    MALE = 'ma', 'Male'
-    FEMALE = 'fe', 'Female'
+    MAN = 'mn', 'Man'
+    WOMEN = 'wn', 'Women'
     BABY = 'ba', 'Baby'
 
-class PostStatus(models.TextChoices):
+class Status1(models.TextChoices):
     ACTIVE = 'ac', 'Active'
     NOTACTIVE = 'na', 'Not Active'
     ARCHIVE = 'ar', 'Archive'
     BANNED = 'bn', 'Banned'
 
 
-class OrderStatus(models.TextChoices):
+class ReciveStatus(models.TextChoices):
     ACTIVE = 'ac', 'Active'
     WAITING = 'wt', 'Waiting'
     RECIVED = 'rc', 'Recived'

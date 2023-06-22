@@ -5,7 +5,7 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.utils.text import slugify
 from uuid import uuid4
 
-from utils.status import Gender, PostStatus
+from utils.status import Gender, Status1
 from .validators import validate_phone, validate_image
 from .services import upload_avatar_path, upload_news_path
 
@@ -136,7 +136,7 @@ class News(models.Model):
         blank=True, null=True
     )
     body = models.CharField(max_length=300, blank=True, null=True)
-    status = models.CharField(max_length=3, choices=PostStatus.choices, default=PostStatus.ACTIVE)
+    status = models.CharField(max_length=3, choices=Status1.choices, default=Status1.ACTIVE)
     is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
