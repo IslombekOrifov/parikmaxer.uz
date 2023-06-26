@@ -25,10 +25,13 @@ class CompanySerializer(serializers.ModelSerializer):
 class CompanyBranchSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompanyBranch
-        exclude = ['created_at', 'updated_at']
+        fields = [
+            'company_branch', 'name', 'person_category',
+            'price', 'description', 'workers'
+        ]
         extra_kwargs = {
-            'company': {'read_only': True},
-            'slug': {'read_only': True},
+            'company_branch': {'read_only': True},
+            'created_at': {'read_only': True},
         }
 
     def create(self, validated_data):
@@ -43,13 +46,23 @@ class CompanyWorkerSerializer(serializers.ModelSerializer):
 
     
 class CompanyServiceSerializer(serializers.ModelSerializer):
+    workers = CompanyWorkerSerializer(many=True)
     class Meta:
         model = CompanyService
         exclude = ['created_at', 'company_branch',]
         extra_kwargs = {
             'slug': {'read_only': True},
             'director': {'read_only': True},
+            'workers': {'read_only': True},
         }
+
+        def create(self, validated_data):
+            validated_data['slug'] = str(uuid4())[-15:]
+            return super().create(validated_data)
+
+
+class ServiceWorkers(serializers.Serializer):
+    id = serializers.IntegerField()
 
 
 class ServiceImageSerializer(serializers.ModelSerializer):

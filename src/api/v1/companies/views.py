@@ -3,19 +3,22 @@ from rest_framework import (
     permissions,
     validators,
     response,
-    status
+    status,
+    views
 )
 
 from utils.status import Status1
 from companies.models import (
     ApplicationCompany, Company,
-    CompanyBranch,
+    CompanyBranch, CompanyWorker,
+    CompanyService,
     Rating
 )
 
 from api.v1.companies.serializers import (
     CompanySerializer, CompanyRetrieveSerializer, CompanyBranchSerializer,
-    CompanyBranchRetrieveSerializer,
+    CompanyBranchRetrieveSerializer, CompanyWorkerSerializer,
+    CompanyServiceSerializer, ServiceWorkers,
     RatingSerializer
 )
 
@@ -101,6 +104,28 @@ class CompanyBranchListCreateApiView(generics.ListCreateAPIView):
         serializer.save(company=self.request.user.company)
 
 
+class CompanyBranchRetrieveAPIView(generics.RetrieveAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = CompanyBranchRetrieveSerializer
+    lookup_field = 'slug'
+
+    def get_object(self):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+
+        assert lookup_url_kwarg in self.kwargs, (
+            'Expected view %s to be called with a URL keyword argument '
+            'named "%s". Fix your URL conf, or set the `.lookup_field` '
+            'attribute on the view correctly.' %
+            (self.__class__.__name__, lookup_url_kwarg)
+        )
+
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+        obj = CompanyBranch.objects.filter(**filter_kwargs).prefetch_related('services', 'workers')
+
+        self.check_object_permissions(self.request, obj)
+        return obj
+   
+
 class CompanyBranchUpdateApiView(generics.UpdateAPIView):
     queryset = CompanyBranch.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
@@ -139,27 +164,134 @@ class CompanyBranchDestroyAPIView(generics.DestroyAPIView):
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class CompanyBranchRetrieveAPIView(generics.RetrieveAPIView):
+class CompanyWorkerListCreateAPIView(generics.ListCreateAPIView):
+    queryset = CompanyWorker.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = CompanyBranchRetrieveSerializer
+    serializer_class = CompanyWorkerSerializer
     lookup_field = 'slug'
-
-    def get_object(self):
-        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
-
-        assert lookup_url_kwarg in self.kwargs, (
-            'Expected view %s to be called with a URL keyword argument '
-            'named "%s". Fix your URL conf, or set the `.lookup_field` '
-            'attribute on the view correctly.' %
-            (self.__class__.__name__, lookup_url_kwarg)
-        )
-
-        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
-        obj = CompanyBranch.objects.filter(**filter_kwargs).prefetch_related('services', 'workers')
-
-        self.check_object_permissions(self.request, obj)
-        return obj
     
+    def get_queryset(self):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        queryset = CompanyWorker.objects.filter(
+            company_branch__slug=self.kwargs[lookup_url_kwarg]
+        )
+        return queryset
+    
+    def perform_create(self, serializer):
+        branch = CompanyBranch.objects.get(
+            company__director=self.request.user, 
+            slug=self.kwargs[self.lookup_field]
+        )
+        if branch:
+            serializer.save(company_branch=branch)
+        else:
+            raise validators.ValidationError("You can't add worker to this company's branch. It's not your!")
+
+
+class CompanyWorkerDestroyAPIView(generics.DestroyAPIView):
+    queryset = CompanyWorker.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = CompanyWorkerSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.company_branch.company == request.user.company:
+            instance.delete()
+        else:
+            raise validators.ValidationError("You can't delete this worker. It's not your company!")
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class CompanyServiceListAPIView(generics.ListAPIView):
+    queryset = CompanyService.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = CompanyServiceSerializer
+
+
+class CompanyServiceCreateAPIView(generics.Create):
+    queryset = CompanyService.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = CompanyServiceSerializer
+
+    def perform_create(self, serializer):
+        branch = CompanyBranch.objects.get(
+            company__director=self.request.user, 
+            slug=self.kwargs[self.lookup_field]
+        )
+        if branch:
+            serializer.save(company_branch=branch)
+        else:
+            raise validators.ValidationError("You can't add service to this company's branch. It's not your!")
+
+
+class CompanyServiceUpdateApiView(generics.UpdateAPIView):
+    queryset = CompanyService.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = CompanyServiceSerializer
+
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', True)
+        instance = self.get_object()
+        if instance.company_branch.company != request.user.company:
+            raise validators.ValidationError("You can't update this Service. It's not your!")
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return response.Response(serializer.data)
+
+
+class CompanyServiceDestroyAPIView(generics.DestroyAPIView):
+    queryset = CompanyService.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.company_branch.company != request.user.company:
+            instance.workers.clear()
+            instance.delete()
+        else:
+            raise validators.ValidationError("You can't delete this Service. It's not your company!")
+        return response.Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ServiceWorkersCreateAPIView(views.APIView):
+    def post(self, request, *args, **kwargs):
+        service = CompanyService.objects.get(id=self.kwargs.get('id'))
+        if service.exists():
+            ids_list = []
+            workers_ids = ServiceWorkers(data=request.data, many=True)
+            if workers_ids.is_valid():
+                for ids in workers_ids.data:
+                    worker = CompanyWorker.objects.filter(
+                        pk=ids.get('id'), 
+                        company_branch__company=request.user.company
+                    )
+                    if worker.exists():
+                        ids_list.append(worker.id)
+                service.workers.add()
+        return response.Response(status=status.HTTP_201_CREATED)
+    
+
+class ServiceWorkersAPIView(views.APIView):
+    def post(self, request, *args, **kwargs):
+        service = CompanyService.objects.get(id=self.kwargs.get('id'))
+        if service.exists():
+            workers_id = ServiceWorkers(data=request.data)
+            if workers_id.is_valid():
+                worker = CompanyWorker.objects.filter(
+                    pk=workers_id.data.get('id'), 
+                    company_branch__company=request.user.company
+                )
+                if worker.exists():
+                    service.workers.remove(worker.id)
+        return response.Response(status=status.HTTP_200_OK)
 
 
 class RatingCreateAPIView(generics.CreateAPIView):

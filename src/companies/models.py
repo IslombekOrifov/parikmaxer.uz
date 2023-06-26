@@ -82,13 +82,14 @@ class CompanyBranch(models.Model):
     def __str__(self):
         return f"{ self.company.name } > filial >{ self.name }" 
 
+
 class CompanyWorker(models.Model):
     company_branch = models.ForeignKey(
         CompanyBranch, 
         on_delete=models.CASCADE,
         related_name='workers'
     )
-    user = models.ForeignKey(
+    user = models.OneToOneField(
         CustomUser,
         on_delete=models.CASCADE,
         related_name='workers'
@@ -111,6 +112,14 @@ class CompanyService(models.Model):
     )
     price = models.PositiveIntegerField(blank=True)
     description = models.TextField()
+
+    workers = models.ManyToManyField(
+        CompanyWorker, 
+        related_name='services', 
+        blank=True, 
+        null=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
