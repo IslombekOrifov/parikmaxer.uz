@@ -7,7 +7,6 @@ from accounts.models import (
     CustomUser, 
     Profile, 
     Experience, 
-    News
 )
 
 

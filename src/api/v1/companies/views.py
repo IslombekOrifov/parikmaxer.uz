@@ -16,11 +16,24 @@ from companies.models import (
 )
 
 from api.v1.companies.serializers import (
+    ApplicationCompanySerializer,
     CompanySerializer, CompanyRetrieveSerializer, CompanyBranchSerializer,
     CompanyBranchRetrieveSerializer, CompanyWorkerSerializer,
     CompanyServiceSerializer, ServiceWorkers,
     RatingSerializer
 )
+
+
+class AplicationCompanyListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = ApplicationCompanySerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        return ApplicationCompany.objects.filter(user=self.request.user)
+
 
 
 class CompanyRetrieveAPIView(generics.RetrieveAPIView):
@@ -312,13 +325,14 @@ class ServiceWorkersAPIView(views.APIView):
 
 
 class RatingCreateAPIView(generics.CreateAPIView):
-    queryset = Rating.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = RatingSerializer
     lookup_field = 'slug'
 
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
-        
         assert self.lookup_field in self.kwargs, (
             'Expected view %s to be called with a URL keyword argument '
             'named "%s". Fix your URL conf, or set the `.lookup_field` '

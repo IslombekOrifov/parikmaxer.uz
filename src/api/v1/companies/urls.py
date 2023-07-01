@@ -1,6 +1,8 @@
 from django.urls import path
 
 from .views import (
+    AplicationCompanyListCreateAPIView,
+
     CompanyListApiView, CompanyUpdateApiView, CompanyDestroyAPIView,
     CompanyBranchListCreateApiView, CompanyBranchUpdateApiView,
     CompanyBranchDestroyAPIView,
@@ -13,6 +15,9 @@ from .views import (
 )
 
 urlpatterns = [
+     # application company urls
+    path('applications/', AplicationCompanyListCreateAPIView.as_view(), name='application_company'),
+
     # company urls
     path('list/', CompanyListApiView.as_view(), name='company_list'),
     path('update/<slug:slug>/', CompanyUpdateApiView.as_view(), name='company_update'),

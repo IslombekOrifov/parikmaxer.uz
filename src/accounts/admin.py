@@ -61,6 +61,3 @@ class ExperienceAdmin(admin.ModelAdmin):
     list_display = ['user', 'role', 'company', 'created_at']
     
 
-@admin.register(News)
-class NewsAdmin(admin.ModelAdmin):
-    list_display = ['author', 'title', 'slug', 'image', 'status', 'created_at']

@@ -3,6 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers, validators
 
 from companies.models import (
+    ApplicationCompany,
     Company,
     CompanyBranch,
     CompanyWorker,
@@ -10,6 +11,15 @@ from companies.models import (
     ServiceImage,
     Rating
 )
+
+
+class ApplicationCompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApplicationCompany
+        exclude = ("user",)
+        extra_kwargs = {
+            'status': {'read_only': True}
+        }
 
     
 class CompanySerializer(serializers.ModelSerializer):
@@ -64,6 +74,7 @@ class CompanyServiceSerializer(serializers.ModelSerializer):
 class ServiceWorkers(serializers.Serializer):
     id = serializers.IntegerField()
 
+
 class ServiceImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceImage
@@ -74,8 +85,6 @@ class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
         fields = ['rate', 'description']
-
-
 
 
 class CompanyRetrieveSerializer(serializers.ModelSerializer):
