@@ -64,7 +64,6 @@ class CompanyServiceSerializer(serializers.ModelSerializer):
 class ServiceWorkers(serializers.Serializer):
     id = serializers.IntegerField()
 
-
 class ServiceImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceImage

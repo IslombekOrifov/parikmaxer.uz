@@ -206,12 +206,22 @@ class CompanyServiceListAPIView(generics.ListAPIView):
     queryset = CompanyService.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = CompanyServiceSerializer
+    lookup_field = 'slug'
+    
+    def get_queryset(self):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+        queryset = CompanyService.objects.filter(
+            company_branch__slug=self.kwargs[lookup_url_kwarg]
+        )
+        return queryset
 
 
 class CompanyServiceCreateAPIView(generics.Create):
     queryset = CompanyService.objects.all()
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = CompanyServiceSerializer
+    lookup_field = 'slug'
+    
 
     def perform_create(self, serializer):
         branch = CompanyBranch.objects.get(
@@ -261,9 +271,9 @@ class CompanyServiceDestroyAPIView(generics.DestroyAPIView):
         return response.Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ServiceWorkersCreateAPIView(views.APIView):
+class ServiceWorkersAPIView(views.APIView):
     def post(self, request, *args, **kwargs):
-        service = CompanyService.objects.get(id=self.kwargs.get('id'))
+        service = CompanyService.objects.get(pk=self.kwargs.get('pk'))
         if service.exists():
             ids_list = []
             workers_ids = ServiceWorkers(data=request.data, many=True)
@@ -272,26 +282,33 @@ class ServiceWorkersCreateAPIView(views.APIView):
                     worker = CompanyWorker.objects.filter(
                         pk=ids.get('id'), 
                         company_branch__company=request.user.company
-                    )
+                    ).first()
                     if worker.exists():
                         ids_list.append(worker.id)
-                service.workers.add()
+                service.workers.add(ids_list)
         return response.Response(status=status.HTTP_201_CREATED)
     
-
-class ServiceWorkersAPIView(views.APIView):
-    def post(self, request, *args, **kwargs):
-        service = CompanyService.objects.get(id=self.kwargs.get('id'))
+    def delete(self, request, *args, **kwargs):
+        service = CompanyService.objects.get(id=self.kwargs.get('pk'))
+        ids_list = []
         if service.exists():
-            workers_id = ServiceWorkers(data=request.data)
-            if workers_id.is_valid():
-                worker = CompanyWorker.objects.filter(
-                    pk=workers_id.data.get('id'), 
-                    company_branch__company=request.user.company
-                )
-                if worker.exists():
-                    service.workers.remove(worker.id)
+            workers_ids = ServiceWorkers(data=request.data)
+            if workers_ids.is_valid():
+                for ids in workers_ids.data:
+                    worker = CompanyWorker.objects.filter(
+                        pk=ids.data.get('id'), 
+                        company_branch__company=request.user.company
+                    ).first()
+                    if worker.exists():
+                        ids_list.append(worker.id)
+                service.workers.remove(ids_list)
         return response.Response(status=status.HTTP_200_OK)
+    
+    def get(self, request, *args, **kwargs):
+        service = CompanyService.objects.get(id=self.kwargs.get('pk'))
+        workers = CompanyWorker.objects.filter(services=service)
+        serialized_data = CompanyWorkerSerializer(workers, many=True)
+        return response.Response(data=serialized_data.data, status=status.HTTP_200_OK)
 
 
 class RatingCreateAPIView(generics.CreateAPIView):
