@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import (
+from api.v1.companies.views import (
     AplicationCompanyListCreateAPIView,
 
     CompanyListApiView, CompanyUpdateApiView, CompanyDestroyAPIView,

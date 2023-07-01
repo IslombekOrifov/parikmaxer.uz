@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import UserRegisterView
+from api.v1.orders.views import OrderListCreateAPIView
 
 urlpatterns = [
-    path('register/', UserRegisterView.as_view(), name='auth_register'),
+    path('all/', OrderListCreateAPIView.as_view(), name='order_listcreate'),
 ]

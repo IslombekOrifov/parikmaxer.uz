@@ -1,11 +1,19 @@
 from rest_framework import generics, permissions
 
-from accounts.models import CustomUser
+from companies.models import CompanyBranch, CompanyService
+from orders.models import Order
 
-from api.v1.accounts.serializers import UserRegisterSerializer
+from api.v1.orders.serializers import OrderSerializer
 
 
-class UserRegisterView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
-    permission_classes = (permissions.AllowAny,)
-    serializer_class = UserRegisterSerializer
+class OrderListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = OrderSerializer
+    lookup_field = 'slug'
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        orders = Order.objects.filter(user=self.request.user)
+        return orders

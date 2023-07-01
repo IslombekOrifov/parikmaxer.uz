@@ -285,43 +285,53 @@ class CompanyServiceDestroyAPIView(generics.DestroyAPIView):
 
 
 class ServiceWorkersAPIView(views.APIView):
-    def post(self, request, *args, **kwargs):
-        service = CompanyService.objects.get(pk=self.kwargs.get('pk'))
-        if service.exists():
+    def post(self, request, pk=None,  *args, **kwargs):
+        if pk:
+            service = CompanyService.objects.get(pk=pk)
+            if service.exists():
+                ids_list = []
+                workers_ids = ServiceWorkers(data=request.data, many=True)
+                if workers_ids.is_valid():
+                    for ids in workers_ids.data:
+                        worker = CompanyWorker.objects.filter(
+                            pk=ids.get('id'), 
+                            company_branch__company=request.user.company
+                        ).first()
+                        if worker.exists():
+                            ids_list.append(worker.id)
+                    service.workers.add(ids_list)
+            return response.Response(status=status.HTTP_201_CREATED)
+        else:
+            raise validators.ValidationError("You can't send data witout id")
+        
+    def delete(self, request, pk=None, *args, **kwargs):
+        if pk:
+            service = CompanyService.objects.get(id=pk)
             ids_list = []
-            workers_ids = ServiceWorkers(data=request.data, many=True)
-            if workers_ids.is_valid():
-                for ids in workers_ids.data:
-                    worker = CompanyWorker.objects.filter(
-                        pk=ids.get('id'), 
-                        company_branch__company=request.user.company
-                    ).first()
-                    if worker.exists():
-                        ids_list.append(worker.id)
-                service.workers.add(ids_list)
-        return response.Response(status=status.HTTP_201_CREATED)
-    
-    def delete(self, request, *args, **kwargs):
-        service = CompanyService.objects.get(id=self.kwargs.get('pk'))
-        ids_list = []
-        if service.exists():
-            workers_ids = ServiceWorkers(data=request.data)
-            if workers_ids.is_valid():
-                for ids in workers_ids.data:
-                    worker = CompanyWorker.objects.filter(
-                        pk=ids.data.get('id'), 
-                        company_branch__company=request.user.company
-                    ).first()
-                    if worker.exists():
-                        ids_list.append(worker.id)
-                service.workers.remove(ids_list)
-        return response.Response(status=status.HTTP_200_OK)
-    
-    def get(self, request, *args, **kwargs):
-        service = CompanyService.objects.get(id=self.kwargs.get('pk'))
-        workers = CompanyWorker.objects.filter(services=service)
-        serialized_data = CompanyWorkerSerializer(workers, many=True)
-        return response.Response(data=serialized_data.data, status=status.HTTP_200_OK)
+            if service.exists():
+                workers_ids = ServiceWorkers(data=request.data)
+                if workers_ids.is_valid():
+                    for ids in workers_ids.data:
+                        worker = CompanyWorker.objects.filter(
+                            pk=ids.data.get('id'), 
+                            company_branch__company=request.user.company
+                        ).first()
+                        if worker.exists():
+                            ids_list.append(worker.id)
+                    service.workers.remove(ids_list)
+            return response.Response(status=status.HTTP_200_OK)
+        else:
+            raise validators.ValidationError("You can't send data witout id")
+        
+
+    def get(self, request, pk=None, *args, **kwargs):
+        if pk:
+            service = CompanyService.objects.get(id=pk)
+            workers = CompanyWorker.objects.filter(services=service)
+            serialized_data = CompanyWorkerSerializer(workers, many=True)
+            return response.Response(data=serialized_data.data, status=status.HTTP_200_OK)
+        else:
+            raise validators.ValidationError("You can't send data witout id")
 
 
 class RatingCreateAPIView(generics.CreateAPIView):
